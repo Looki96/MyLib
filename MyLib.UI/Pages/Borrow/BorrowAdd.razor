@@ -1,0 +1,99 @@
+﻿@page "/borrow/add"
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@inject IBookService BookService;
+@inject IBorrowService BorrowService;
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    <MudText Typo="Typo.h4" Class="mb-3">Create New Borrow</MudText>
+
+    @if (ShowError)
+    {
+        <MudAlert Class="mb-3" Severity="Severity.Warning" ShowCloseIcon="true" CloseIconClicked="(() => CloseAlert(true))">@ErrorMessage</MudAlert>
+    }
+
+    <EditForm Model="@borrow" OnValidSubmit="OnValidSubmit">
+        <MudCard>
+            <MudCardContent>
+                <MudAutocomplete T="int" Label="ISBN" @bind-Value="borrow.BookId" For="@(() => borrow.BookId)" ToStringFunc="acBookToString" SearchFunc="@SearchBooks" />
+                <MudAutocomplete T="int" Label="Borrower" @bind-Value="borrow.BorrowerId" For="@(() => borrow.BorrowerId)" ToStringFunc="acBorrowToString" SearchFunc="@SearchBorrowers" />
+                <MudDatePicker Label="Return Date" @bind-Date="borrow.ReturnDate" DisableToolbar="true" />
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Class="ml-auto">Submit</MudButton>
+            </MudCardActions>
+        </MudCard>
+    </EditForm>
+</MudContainer>
+
+@code {
+    private CreateBorrowDto borrow = new CreateBorrowDto { ReturnDate = DateTime.Now.Date.AddMonths(1)};
+    private IEnumerable<BookDto> books;
+    private IEnumerable<UserDto> borrowers;
+    private bool ShowError = false;
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await BookService.GetAll();
+        borrowers = (await UserService.GetAll()).Where(u => u.Role == UserRoles.Borrower);
+    }
+
+    private async void OnValidSubmit(EditContext context)
+    {
+        var result = await BorrowService.Create(borrow);
+
+        if (result.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/borrow");
+        }
+        else
+        {
+            var validationProblemDetails = JsonSerializer.Deserialize<ServerValidation>(await result.Content.ReadAsStringAsync());
+            ErrorMessage = validationProblemDetails.Errors.First().Value.First();
+            ShowError = true;
+        }
+
+        StateHasChanged();
+    }
+
+    private string validation(string value)
+    {
+        return "Dupa";
+    }
+
+    private string acBorrowToString(int value)
+    {
+        var b = borrowers.First(b => b.Id == value);
+        return $"{b.SName} {b.Name}";
+    }
+
+    private string acBookToString(int value)
+    {
+        var b = books.First(b => b.Id == value);
+        return b.ISBN;
+    }
+
+    private async Task<IEnumerable<int>> SearchBorrowers(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return borrowers.Select(u => u.Id);
+
+        var v = borrowers.Where(b => $"{b.SName} {b.Name}".Contains(value));
+
+        return v.Select(u => u.Id);
+    }
+
+    private async Task<IEnumerable<int>> SearchBooks(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return books.Select(b => b.Id);
+
+        var v = books.Where(b => b.ISBN.Contains(value));
+
+        return v.Select(b => b.Id);
+    }
+
+    private void CloseAlert(bool value)
+    {
+        ShowError = !value;
+    }
+}

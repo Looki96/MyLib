@@ -1,0 +1,10 @@
+﻿<AuthorizeView>
+    <Authorized>
+        <MudImage Src="user.png" Class="mr-3" Width="32">U</MudImage>
+        <MudElement HtmlTag="p" Class="mr-3">Hello, @context.User.Identity.Name!</MudElement>
+        <MudButton Href="logout" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white">Logout</MudButton>
+    </Authorized>
+    <NotAuthorized>
+        <MudButton Href="login" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white">Login</MudButton>
+    </NotAuthorized>
+</AuthorizeView>

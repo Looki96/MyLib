@@ -1,0 +1,49 @@
+﻿@page "/borrow"
+
+@inject IBorrowService BorrowService
+
+<MudText Class="mb-3" Typo="Typo.h4">Borrows</MudText>
+
+<MudTable Items="@borrows" RowStyleFunc="RowStyleFunc">
+    <ToolBarContent>
+        <MudButton Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Href="borrow/add" Class="mr-3">Add new</MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>ID</MudTh>
+        <MudTh>Book Title</MudTh>
+        <MudTh>ISBN</MudTh>
+        <MudTh>Borrower</MudTh>
+        <MudTh>Create Date</MudTh>
+        <MudTh>Return Date</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="ID">@context.Id</MudTd>
+        <MudTd DataLabel="Title">@context.Book.Title</MudTd>
+        <MudTd DataLabel="ISBN">@context.Book.ISBN</MudTd>
+        <MudTd DataLabel="Borrower">@($"{context.Borrower.SName} {context.Borrower.Name}")</MudTd>
+        <MudTd DataLabel="CreateDate">@context.CreateDate.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd DataLabel="ReturnDate">@context.ReturnDate.ToString("dd.MM.yyyy")</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+    @code {
+    private IEnumerable<BorrowDto> borrows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        borrows = await BorrowService.GetAll();
+    }
+
+    private string RowStyleFunc(BorrowDto book, int index)
+    {
+        if(book.ReturnDate < DateTime.Now)
+        {
+            return "background-color: #FFCDD2";
+        }
+
+        return "";
+    }
+}

@@ -1,0 +1,38 @@
+﻿<MudGrid>
+    <MudItem xs="3">
+        <MudImage Style="width: 100%;" Src="@Book.URL"></MudImage>
+    </MudItem>
+    <MudItem xs="9">
+        <MudTextField Label="Subtitle" ReadOnly="true" @bind-Value="Book.Subtitle" />
+        <MudTextField Label="Description" ReadOnly="true" Lines="10" @bind-Value="Book.Description" />
+    </MudItem>
+</MudGrid>
+<MudGrid>
+    <MudItem xs="3">
+        <MudTextField Label="ISBN" ReadOnly="true" @bind-Value="Book.ISBN" />
+    </MudItem>
+    <MudItem xs="3">
+        <MudTextField Label="Quantity" ReadOnly="true" @bind-Value="Book.Quantity" />
+    </MudItem>
+    <MudItem xs="3">
+        <MudTextField Label="Pages" ReadOnly="true" @bind-Value="Book.Pages" />
+    </MudItem>
+    <MudItem xs="3">
+        <MudTextField Label="Publish Date" ReadOnly="true" @bind-Value="Book.PublishDate" />
+    </MudItem>
+</MudGrid>
+<MudTextField Label="Category" ReadOnly="true" @bind-Value="Book.Category.Name" />
+<MudTextField Label="Publisher" ReadOnly="true" @bind-Value="Book.Publisher.Name" />
+<MudTextField Label="Authors" ReadOnly="true" @bind-Value="authorsText" />
+
+@code {
+    [Parameter]
+    public BookDto Book { get; set; }
+
+    private string authorsText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authorsText = string.Join(", ", Book.Authors.Select(x => $"{x.SName} {x.Name}"));
+    }
+}

@@ -1,0 +1,28 @@
+﻿@page "/book/{id:int}"
+@inject IBookService BookService
+
+@if(book != null)
+{
+    <MudCard>
+        <MudCardHeader>
+            <MudText Typo="Typo.h4">@($"Title: {book.Title}")</MudText>
+        </MudCardHeader>
+        <MudCardContent>
+            <BookDisplay Book="book"></BookDisplay>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private BookDto book;
+    private string authorsText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetById(Id);
+        authorsText = string.Join(", ", book.Authors.Select(x => $"{x.SName} {x.Name}"));
+    }
+}

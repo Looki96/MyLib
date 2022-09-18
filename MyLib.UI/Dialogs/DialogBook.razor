@@ -1,0 +1,18 @@
+﻿<MudDialog>
+    <DialogContent>
+        <BookDisplay Book="Book"></BookDisplay>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Close">Close</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    MudDialogInstance MudDialog { get; set; }
+
+    [Parameter]
+    public BookDto Book { get; set; }
+
+    void Close() => MudDialog.Close();
+}

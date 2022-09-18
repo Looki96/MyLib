@@ -1,0 +1,252 @@
+﻿@page "/book/add"
+@inject NavigationManager NavigationManager
+@inject IBookService BookService
+@inject ICategoryService CategoryService
+@inject IPublisherService PublisherService
+@inject IAuthorService AuthorService
+@inject IMapper Mapper;
+
+<AuthorizeView Roles="Admin,Librarrian">
+    <Authorized>
+        @if (book != null)
+        {
+            <EditForm Context="formContext" Model="@book" OnValidSubmit="OnValidSubmit">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h5" Class="mb-3">Create New Book</MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem xs="3">
+                                <InputFile OnChange="UploadFiles" id="fileInput" hidden accept=".jpg, .jpeg, .png" />
+                                <MudImage Style="width: 100%;" Src="@book.URL" Alt="No Selected"></MudImage>
+                                <MudFab HtmlTag="label" Color="Color.Secondary" Icon="@Icons.Filled.Image" Label="Load picture" for="fileInput" />
+                            </MudItem>
+                            <MudItem xs="9">
+                                <MudTextField Label="Title" @bind-Value="book.Title" For="@(() => book.Title)" />
+                                <MudTextField Label="Subtitle" @bind-Value="book.Subtitle" For="@(() => book.Subtitle)" />
+                                <MudTextField Label="Description" Lines="10" @bind-Value="book.Description" For="@(() => book.Description)" />
+                            </MudItem>
+                        </MudGrid>
+                        <MudGrid>
+                            <MudItem xs="4"><MudTextField Label="ISBN" @bind-Value="book.ISBN" For="@(() => book.ISBN)" /></MudItem>
+                            <MudItem xs="4"><MudNumericField Label="Quantity" @bind-Value="book.Quantity" For="@(() => book.Quantity)" /></MudItem>
+                            <MudItem xs="4"><MudNumericField Label="Pages" @bind-Value="book.Pages" For="@(() => book.Pages)" /></MudItem>
+                        </MudGrid>
+                        <MudSelect T="int" Label="Categories" @bind-Value="book.CategoryId">
+                            @if (categories != null)
+                            {
+                                @foreach (var category in categories)
+                                {
+                                    <MudSelectItem T="int" Value="@category.Id">@category.Name</MudSelectItem>
+                                }
+
+                            }
+                        </MudSelect>
+                        <MudSelect T="int" Label="Publishers" @bind-Value="book.PublisherId">
+                            @if (publishers != null)
+                            {
+                                @foreach (var publisher in publishers)
+                                {
+                                    <MudSelectItem T="int" Value="@publisher.Id">@publisher.Name</MudSelectItem>
+                                }
+
+                            }
+                        </MudSelect>
+                        <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" T="int" Label="Authors" MultiSelection="true" @bind-SelectedValues="selectedAuthorsIds">
+                            @if (authors != null)
+                            {
+                                @foreach (var author in authors)
+                                {
+                                    <MudSelectItem T="int" Value="@author.Id">@author.SName @author.Name</MudSelectItem>
+                                }
+                            }
+                        </MudSelect>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Class="ml-auto">Submit</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </EditForm>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudAlert Severity="Severity.Error">No access!</MudAlert>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private CreateBookDto book;
+    private IEnumerable<CategoryDto> categories;
+    private IEnumerable<PublisherDto> publishers;
+    private IEnumerable<AuthorDto> authors;
+    private IEnumerable<int> selectedAuthorsIds;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetAll();
+        publishers = await PublisherService.GetAll();
+        authors = await AuthorService.GetAll();
+        book = new CreateBookDto { CategoryId = 1, PublisherId = 1 };
+    }
+
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        string str = "";
+
+        if (selectedValues.Count() > 0)
+        {
+            var result = authors.Where(a => selectedValues.Any(i => int.Parse(i) == a.Id));
+            str = string.Join(", ", result.Select(x => $"{x.SName} {x.Name}"));
+        }
+
+        return str;
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        BookService.Create(book);
+        StateHasChanged();
+    }
+
+    private async Task UploadFiles(InputFileChangeEventArgs e)
+    {
+        //Stream str = e.File.OpenReadStream();
+
+        //using (var fileStream = File.Create("C:\\Users\\mateu\\source\\repos\\MyLib\\MyLib.UI\\wwwroot\\Images\\Books\\test.png"))
+        //{
+        //    str.Seek(0, SeekOrigin.Begin);
+        //    str.CopyTo(fileStream);
+        //}
+
+        //var format = "image/png";
+        //var img = await e.GetMultipleFiles(1).First().RequestImageFileAsync(format,200, 200);
+        //var buffer = new byte[img.Size];
+        //await img.OpenReadStream().ReadAsync(buffer);
+
+        using (var fileStream = File.Create("C:\\Users\\mateu\\source\\repos\\MyLib\\MyLib.UI\\wwwroot\\Images\\Books\\test.png"))
+        {
+            
+        }
+    }
+}
+
+@*@page "/book/add"
+@page "/book/edit/{id:int}"
+@inject NavigationManager NavigationManager
+@inject IBookService BookService
+@inject ICategoryService CategoryService
+@inject IPublisherService PublisherService
+@inject IAuthorService AuthorService
+@inject IMapper Mapper;
+
+<MudText Typo="Typo.h4" Class="mb-3">@(IsEdit ? "Edit Form" : "Create New Form")</MudText>
+
+<EditForm Model="@bookDto" OnValidSubmit="OnValidSubmit">
+    <MudCard>
+        <MudCardContent>
+            <MudGrid>
+                <MudItem xs="3">
+                    <MudImage Style="width: 100%;" Src="@bookDto.URL"></MudImage></MudItem>
+                <MudItem xs="9">
+                        <MudTextField Label="Title" Disabled="@IsEdit" @bind-Value="bookDto.Title" For="@(() => bookDto.Title)" />
+                    <MudTextField Label="Subtitle" @bind-Value="bookDto.Subtitle" For="@(() => bookDto.Subtitle)" />
+                    <MudTextField Variant="Variant.Text" Label="Description" Lines="10" @bind-Value="bookDto.Description" For="@(() => bookDto.Description)" />
+                </MudItem>
+            </MudGrid>
+            <MudGrid>
+                <MudItem xs="4"><MudTextField Label="ISBN" Disabled="@IsEdit" @bind-Value="bookDto.ISBN" For="@(() => bookDto.ISBN)" /></MudItem>
+                <MudItem xs="4"><MudNumericField Label="Quantity" @bind-Value="bookDto.Quantity" For="@(() => bookDto.Quantity)" /></MudItem>
+                <MudItem xs="4"><MudNumericField Label="Pages" @bind-Value="bookDto.Pages" For="@(() => bookDto.Pages)" /></MudItem>
+            </MudGrid>
+            <MudSelect T="int" Label="Categories" @bind-Value="bookDto.CategoryId">
+            @if (categoryDtos != null)
+            {
+                @foreach (var category in categoryDtos)
+                {
+                    <MudSelectItem T="int" Value="@category.Id">@category.Name</MudSelectItem>
+                }
+            }
+            </MudSelect>
+            <MudSelect T="int" Label="Publishers" @bind-Value="bookDto.PublisherId">
+                @if (publisherDtos != null)
+                {
+                    @foreach (var publisher in publisherDtos)
+                    {
+                        <MudSelectItem T="int" Value="@publisher.Id">@publisher.Name</MudSelectItem>
+                    }
+                }
+            </MudSelect>
+            <MudSelect MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))" T="int" Label="Authors" MultiSelection="true" @bind-SelectedValues="selectedAuthorsIds">
+                @if (authorDtos != null)
+                {
+                    @foreach (var author in authorDtos)
+                    {
+                        <MudSelectItem T="int" Value="@author.Id">@author.SName @author.Name</MudSelectItem>
+                    }
+                }
+            </MudSelect>
+        </MudCardContent>
+        <MudCardActions>
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Class="ml-auto">Submit</MudButton>
+        </MudCardActions>
+    </MudCard>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private bool IsEdit = false;
+    private BookDto bookDto = new BookDto();
+    private IEnumerable<CategoryDto> categoryDtos;
+    private IEnumerable<PublisherDto> publisherDtos;
+    private IEnumerable<AuthorDto> authorDtos;
+    private IEnumerable<int> selectedAuthorsIds;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categoryDtos = await CategoryService.GetAll();
+        publisherDtos = await PublisherService.GetAll();
+        authorDtos = await AuthorService.GetAll();
+
+        if (Id > 0)
+        {
+            IsEdit = true;
+            bookDto = await BookService.GetById(Id);
+            selectedAuthorsIds = bookDto.Authors.Select(a => a.Id);
+        }
+    }
+
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        string str = "";
+
+        if (selectedValues.Count() > 0)
+        {
+            var result = authorDtos.Where(a => selectedValues.Any(i => int.Parse(i) == a.Id));
+            str = string.Join(", ", result.Select(x => $"{x.SName} {x.Name}"));
+        }
+
+        return str;
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        if (IsEdit)
+        {
+            UpdateBookDto updateBookDto = Mapper.Map<UpdateBookDto>(bookDto);
+            BookService.Update(Id, updateBookDto);
+            NavigationManager.NavigateTo("book");
+        }
+        else
+        {
+            CreateBookDto createBookDto = Mapper.Map<CreateBookDto>(bookDto);
+            BookService.Create(createBookDto);
+            NavigationManager.NavigateTo("book");
+        }
+
+        StateHasChanged();
+    }
+}*@

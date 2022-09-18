@@ -1,0 +1,45 @@
+﻿@inherits LayoutComponentBase
+<MudThemeProvider />
+<MudDialogProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Style="@($"background:{Colors.Cyan.Darken4};")">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudImage Src="logo32.png" Class="ml-3"></MudImage>
+        <MudText Typo="Typo.h5" Class="ml-3">E-Librarry</MudText>
+        <MudSpacer />
+        <LoginDisplay></LoginDisplay>
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <MudPaper Elevation="0" Class="py-3">
+            <MudNavMenu Color="Color.Info" Bordered="true">
+                <MudNavLink Href="/" Match=NavLinkMatch.All Icon="@Icons.Filled.Home">Home</MudNavLink>
+                <MudNavLink Href="/book" Icon="@Icons.Filled.LibraryBooks">Books</MudNavLink>
+                <AuthorizeView Roles="Borrower">
+                    <MudNavLink Href="/borrow/my" Icon="@Icons.Filled.MenuBook">My Borrows</MudNavLink>
+                </AuthorizeView>
+                <AuthorizeView Roles="Admin,Librarrian">
+                    <MudNavLink Href="/borrow" Icon="@Icons.Filled.List">Borrows</MudNavLink>
+                    <MudNavLink Href="/user" Icon="@Icons.Filled.SupervisedUserCircle">Users</MudNavLink>   
+                </AuthorizeView>
+                <AuthorizeView Roles="Admin">
+                    <MudNavLink Href="/settings" Icon="@Icons.Filled.AdminPanelSettings">Settings</MudNavLink>
+                </AuthorizeView>
+            </MudNavMenu>
+        </MudPaper>
+        </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="my-5 pt-5">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+}

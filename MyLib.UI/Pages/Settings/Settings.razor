@@ -1,0 +1,47 @@
+﻿@page "/settings"
+@inject ISettingService SettingService
+
+@if (Loaded)
+{
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudPaper Class="pa-4" Elevation="3">
+            <MudForm @bind-IsValid="@Success">
+                <MudElement HtmlTag="h4">Settings</MudElement>
+                <MudTextField T="string" Label="Min. Return Days" Required="true" RequiredError="'Min. Return Days' is required!"
+                              @bind-Value="SMinReturnDays.Value" For="@(() => SMinReturnDays.Value)" />
+                <MudTextField T="string" Label="Max. Return Days" Required="true" RequiredError="'Max. Return Days' is required!"
+                              @bind-Value="SMaxReturnDays.Value" For="@(() => SMaxReturnDays.Value)" />
+                <MudTextField T="string" Label="Max. Borrow Books" Required="true" RequiredError="'Max. Borrow Books' is required!"
+                              @bind-Value="SMaxBorrowBooks.Value" For="@(() => SMaxBorrowBooks.Value)" />
+                <div class="d-flex align-center justify-space-between mt-5">
+                    <MudButton OnClick="OnValidSubmit" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!Success)" Class="ml-auto">Save</MudButton>
+                </div>
+            </MudForm>
+        </MudPaper>
+    </MudContainer>
+}
+
+@code {
+    private SettingDto SMinReturnDays;
+    private SettingDto SMaxReturnDays;
+    private SettingDto SMaxBorrowBooks;
+    private bool Loaded = false;
+    private bool Success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SMinReturnDays = await SettingService.GetByKey("MinReturnDays");
+        SMaxReturnDays = await SettingService.GetByKey("MaxReturnDays");
+        SMaxBorrowBooks = await SettingService.GetByKey("MaxBorrowBooks");
+        Loaded = true;
+    }
+
+    private void OnValidSubmit()
+    {
+        SettingService.Update(SMinReturnDays.Id, SMinReturnDays.Value);
+        SettingService.Update(SMaxReturnDays.Id, SMaxReturnDays.Value);
+        SettingService.Update(SMaxBorrowBooks.Id, SMaxBorrowBooks.Value);
+
+        StateHasChanged();
+    }
+}

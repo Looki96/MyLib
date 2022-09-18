@@ -1,0 +1,67 @@
+﻿@page "/user/edit/{id:int}"
+
+@using System.ComponentModel.DataAnnotations
+@inject NavigationManager NavigationManager
+@inject IUserService UserService
+@inject IMapper Mapper;
+
+@if (userSource != null)
+{
+    <AuthorizeView Roles="Admin,Librarrian">
+        <Authorized>
+            <MudContainer MaxWidth="MaxWidth.Small">
+                <EditForm Context="user_context" Model="@user" OnValidSubmit="OnValidSubmit">
+                    <MudCard>
+                        <MudCardHeader>
+                            <MudText Typo="Typo.h5" Class="mb-3">Edit User</MudText>
+                            </MudCardHeader>
+                            <MudCardContent>
+                                <MudSelect @bind-Value="userSource.Role" T="UserRoles" Label="Role" Disabled="true" AnchorOrigin="Origin.BottomCenter">
+                                    <MudSelectItem Value="@(UserRoles.Admin)">Admin</MudSelectItem>
+                                    <MudSelectItem Value="@(UserRoles.Librarrian)">Librarrian</MudSelectItem>
+                                    <MudSelectItem Value="@(UserRoles.Borrower)">Borrower</MudSelectItem>
+                                </MudSelect>
+                                <MudTextField Label="Name" @bind-Value="user.Name" For="@(() => user.Name)" />
+                                <MudTextField Label="Surname" @bind-Value="user.SName" For="@(() => user.SName)" />
+                                <MudTextField Label="E-Mail" @bind-Value="user.EMail" For="@(() => user.EMail)"
+                                          Validation="@(new EmailAddressAttribute() {ErrorMessage = "The email address is invalid"})" />
+                            </MudCardContent>
+                            <MudCardActions>
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Class="ml-auto">Submit</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </EditForm>
+                </MudContainer>
+            </Authorized>
+            <NotAuthorized>
+                @(IsAccess = false)
+        </NotAuthorized>
+    </AuthorizeView>
+}
+@if (!IsAccess)
+{
+    <MudAlert Severity="Severity.Error">No access!</MudAlert>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private bool IsAccess = true;
+    private UserDto userSource;
+    private UpdateUserDto user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userSource = await UserService.GetById(Id);
+        IsAccess = userSource != null;
+        user = Mapper.Map<UpdateUserDto>(userSource);
+    }
+
+    private void OnValidSubmit(EditContext context)
+    {
+        UserService.Update(Id, user, userSource.Role);
+        NavigationManager.NavigateTo("/user");
+        StateHasChanged();
+    }
+}

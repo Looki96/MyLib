@@ -1,0 +1,49 @@
+﻿@page "/login"
+@inject IAccountService AccountService
+@inject ILocalStorageService localStorageService
+@inject NavigationManager NavigationManager
+
+<MudContainer MaxWidth="MaxWidth.Small">
+    @if (ShowError)
+    {
+        <MudAlert Class="mb-3" Severity="Severity.Warning" ShowCloseIcon="true" CloseIconClicked="(() => CloseAlert(true))">@ErrorMessage</MudAlert>
+    }
+    <MudPaper Class="pa-4" Elevation="3">
+        <MudElement HtmlTag="h1">Login Panel</MudElement>
+        <MudTextField T="string" Label="Login" Required="true" RequiredError="Login is required!"
+                      @bind-Value="loginDto.Login" For="@(() => loginDto.Login)" />
+        <MudTextField T="string" Label="Password" InputType="InputType.Password" Required="true" RequiredError="Password is required!"
+                      @bind-Value="loginDto.Password" For="@(() => loginDto.Password)" />
+        <div class="d-flex align-center justify-space-between mt-5">
+            <MudButton OnClick="OnValidSubmit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Submit</MudButton>
+        </div>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private bool ShowError = false;
+    private LoginDto loginDto = new LoginDto();
+    private string ErrorMessage;
+
+    private async Task OnValidSubmit()
+    {
+        var result = await AccountService.Login(loginDto);
+
+        if (result.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            var validationProblemDetails = JsonSerializer.Deserialize<ServerValidation>(await result.Content.ReadAsStringAsync());
+            ErrorMessage = validationProblemDetails.Errors.First().Value.First();
+            ShowError = true;
+        }
+
+    }
+
+    private void CloseAlert(bool value)
+    {
+        ShowError = !value;
+    }
+}

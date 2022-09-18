@@ -1,0 +1,47 @@
+﻿@page "/user"
+@inject IUserService UserService
+
+<AuthorizeView Roles="Admin,Librarrian">
+    <Authorized>
+        @if (Users != null)
+        {
+            @*<MudTable Items="@Users" >
+                <ToolBarContent>
+                <MudButton Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Href="user/add" Class="mr-3">Add new</MudButton>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh>Name</MudTh>
+                <MudTh>Surname</MudTh>
+                <MudTh>E-Mail</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate Context="user">
+                <MudTd DataLabel="ID">@user.Id</MudTd>
+                <MudTd DataLabel="Name">@user.Name</MudTd>
+                <MudTd DataLabel="SName">@user.SName</MudTd>
+                <MudTd DataLabel="EMail">@user.EMail</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Tertiary" Href=@($"/user/edit/{@user.Id}")></MudIconButton><MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Href=@($"/user/delete/{@user.Id}")></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+            </MudTable>*@
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudAlert Severity="Severity.Error">No access!</MudAlert>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private IEnumerable<UserDto> Users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Users = await UserService.GetAll();
+    }
+}

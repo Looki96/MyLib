@@ -1,0 +1,146 @@
+﻿@page "/book"
+@inject IBookService BookService
+@inject ICategoryService CategoryService
+@inject IDialogService DialogService
+@inject NavigationManager NavigationManager
+
+<MudText Class="mb-3" Typo="Typo.h4">Books in librarry</MudText>
+
+<MudPaper Elevation="25" Class="mb-3">
+    <MudToolBar>
+        <AuthorizeView Roles="Admin,Librarrian">
+            <MudButton Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Href="book/add" Class="mr-3">Add new</MudButton>
+            <MudText Class="mr-3">Grid View</MudText>
+            <MudSwitch @bind-Checked="@gridView" Class="mr-3" Color="Color.Primary" />
+        </AuthorizeView>
+        <MudSelect T="string" Label="Categories" MultiSelection="true" @bind-SelectedValues="selectedCategories" OnClose="OnClose">
+            @if (categoryDtos != null)
+            {
+                @foreach (var category in categoryDtos)
+                {
+                    <MudSelectItem T="string" Value="@category">@category</MudSelectItem>
+                }
+            }
+        </MudSelect>
+    </MudToolBar>
+</MudPaper>
+
+@if (bookDtos != null && bookDtos.Count() > 0)
+{
+    @if (!gridView)
+    {
+        <MudTable Items="@bookDtos" >
+            <ToolBarContent>
+                
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>ID</MudTh>
+                <MudTh></MudTh>
+                <MudTh>Title</MudTh>
+                <MudTh>Subtitle</MudTh>
+                <MudTh>ISBN</MudTh>
+                <MudTh>Pages</MudTh>
+                <MudTh>Authors</MudTh>
+                <MudTh>Actions</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="ID">@context.Id</MudTd>
+                <MudTd DataLabel="Url"><MudImage Height="50" Src="@context.URL"/></MudTd>
+                <MudTd DataLabel="Title">@context.Title</MudTd>
+                <MudTd DataLabel="Subtitle">@context.Subtitle</MudTd>
+                <MudTd DataLabel="ISBN">@context.ISBN</MudTd>
+                <MudTd DataLabel="Pages">@context.Pages</MudTd>
+                <MudTd DataLabel="Authors">
+                    @foreach(var author in context.Authors)
+                    {
+                        <MudText>
+                            @author.SName @author.Name
+                        </MudText>
+                    }
+                </MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye" Color="Color.Info" OnClick="() => BookViewClick(context.Id)"></MudIconButton><MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Tertiary" Href=@($"/book/edit/{@context.Id}")></MudIconButton><MudSpacer />
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Href=@($"/book/delete/{@context.Id}")></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    }
+    else
+    {
+        <MudGrid Spacing="3" Justify="Justify.FlexStart">
+            @foreach (var book in bookDtos)
+            {
+                <MudItem xs="3" Class="d-flex align-stretch flex-grow-1 gap-4">
+                    <MudCard>
+                        <MudCardMedia Image="@book.URL"/>
+                        <MudCardContent>
+                            <MudText Typo="Typo.h5">@book.Title</MudText>
+                            <MudText Typo="Typo.body2">@book.Subtitle</MudText>
+                        </MudCardContent>
+                        <MudCardActions Class="align-self-end">
+                            <MudButton Variant="Variant.Text" Href=@($"book/{book.Id}") Color="Color.Primary">Details</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+}
+else
+{
+    <MudText Color="Color.Info">Not found any records</MudText>
+}
+
+@code {
+    [CascadingParameter] protected Task<AuthenticationState> AuthStat { get; set; }
+
+    private IEnumerable<BookDto> bookDtosAll;
+    private IEnumerable<BookDto> bookDtos;
+    private IEnumerable<string> categoryDtos;
+    private IEnumerable<string> selectedCategories { get; set; } = new HashSet<string>();
+    private bool gridView = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthStat).User;
+
+        if(user.IsInRole("Admin") || user.IsInRole("Librarrian"))
+        {
+            gridView = false;
+        }
+
+        categoryDtos = (await CategoryService.GetAll()).Select(c => c.Name);
+        bookDtosAll = await BookService.GetAll();
+        bookDtos = bookDtosAll;
+    }
+
+    private void OnClose()
+    {
+        if (selectedCategories.Count() > 0)
+        {
+            bookDtos = bookDtosAll.Where(b => selectedCategories.Any(s => s == b.Category.Name));
+        }
+        else
+        {
+            bookDtos = bookDtosAll;
+        }
+    }
+
+    private void BookViewClick(int id)
+    {
+        var b = bookDtosAll.First(b => b.Id == id);
+        var parameters = new DialogParameters();
+        parameters.Add("Book", b);
+
+        var options = new DialogOptions 
+        { 
+            CloseOnEscapeKey = true 
+        };
+
+        DialogService.Show<DialogBook>(b.Title, parameters, options);
+    }
+}
