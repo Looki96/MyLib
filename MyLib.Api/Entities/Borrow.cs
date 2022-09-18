@@ -22,5 +22,7 @@ namespace MyLib.Api.Entities
         public DateTime CreateDate { get; set; }
 
         public DateTime? ReturnDate { get; set; }
+
+        public DateTime? ReturnedDate { get; set; }
     }
 }

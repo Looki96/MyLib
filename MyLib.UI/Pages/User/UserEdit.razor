@@ -61,7 +61,7 @@
     private void OnValidSubmit(EditContext context)
     {
         UserService.Update(Id, user, userSource.Role);
-        NavigationManager.NavigateTo("/user");
         StateHasChanged();
+        NavigationManager.NavigateTo("/user");
     }
 }

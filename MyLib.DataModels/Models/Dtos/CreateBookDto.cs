@@ -22,6 +22,7 @@ namespace MyLib.DataModels.Models.Dtos
         [MinLength(13)]
         public string? ISBN { get; set; }
 
+        [Url]
         public string? URL { get; set; }
 
         public int Pages { get; set; }

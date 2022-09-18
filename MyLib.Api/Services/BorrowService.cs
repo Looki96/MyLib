@@ -97,14 +97,14 @@ namespace MyLib.Api.Services
 
         public async Task<bool> GiveBack(int id)
         {
-            var borror = await _dbContext.Borrows.FirstOrDefaultAsync(b => b.Id == id && b.ReturnDate == null);
+            var borror = await _dbContext.Borrows.FirstOrDefaultAsync(b => b.Id == id);
 
             if (borror == null)
             {
                 return false;
             }
 
-            borror.ReturnDate = DateTime.Now;
+            borror.ReturnedDate = DateTime.Now;
 
             await _dbContext.SaveChangesAsync();
             return true;

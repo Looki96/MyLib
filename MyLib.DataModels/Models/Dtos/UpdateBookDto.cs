@@ -15,11 +15,17 @@ namespace MyLib.DataModels.Models.Dtos
 
         public int Quantity { get; set; }
 
+        public int Pages { get; set; }
+
         public string? Description { get; set; }
 
+        [Url]
         public string? URL { get; set; }
 
         [Required]
         public int CategoryId { get; set; }
+
+        [Required]
+        public int PublisherId { get; set; }
     }
 }

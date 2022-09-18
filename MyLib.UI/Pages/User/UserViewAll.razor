@@ -5,7 +5,7 @@
     <Authorized>
         @if (Users != null)
         {
-            @*<MudTable Items="@Users" >
+            <MudTable Items="@Users" >
                 <ToolBarContent>
                 <MudButton Variant="Variant.Filled" Style="background-color:lightseagreen; color:white" Href="user/add" Class="mr-3">Add new</MudButton>
             </ToolBarContent>
@@ -29,7 +29,7 @@
             <PagerContent>
                 <MudTablePager />
             </PagerContent>
-            </MudTable>*@
+            </MudTable>
         }
     </Authorized>
     <NotAuthorized>

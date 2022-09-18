@@ -18,6 +18,8 @@ namespace MyLib.DataModels.Models.Dtos
 
         public DateTime CreateDate { get; set; }
 
-        public DateTime ReturnDate { get; set; }
+        public DateTime? ReturnDate { get; set; } 
+
+        public DateTime? ReturnedDate { get; set; }
     }
 }

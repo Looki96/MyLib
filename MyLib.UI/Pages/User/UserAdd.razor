@@ -48,7 +48,7 @@
     private void OnValidSubmit(EditContext context)
     {
         UserService.Create(user, role);
-        NavigationManager.NavigateTo("/user");
         StateHasChanged();
+        NavigationManager.NavigateTo("/user");
     }
 }

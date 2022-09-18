@@ -17,7 +17,7 @@
         <MudTd DataLabel="Title">@context.Book.Title</MudTd>
         <MudTd DataLabel="ISBN">@context.Book.ISBN</MudTd>
         <MudTd DataLabel="CreateDate">@context.CreateDate.ToString("dd.MM.yyyy")</MudTd>
-        <MudTd DataLabel="ReturnDate">@context.ReturnDate.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd DataLabel="ReturnDate">@(context.ReturnDate == null ? "" : context.ReturnDate.Value.ToString("dd.MM.yyyy"))</MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />

@@ -46,6 +46,13 @@ namespace MyLib.Api.Services
         public async Task<int> Create(CreateBookDto dto)
         {
             var book = _mapper.Map<Book>(dto);
+
+            foreach(var id in dto.AuthorsId)
+            {
+                var author = _dbContext.Authors.FirstOrDefault(b => b.Id == id);
+                if(author != null) book.Authors.Add(author);
+            }
+
             _dbContext.Books.Add(book);
             await _dbContext.SaveChangesAsync();
 
@@ -63,9 +70,11 @@ namespace MyLib.Api.Services
 
             book.Subtitle = dto.Subtitle;
             book.Quantity = dto.Quantity;
+            book.Pages = dto.Pages;
             book.Description = dto.Description;
             book.URL = dto.URL;
             book.CategoryId = dto.CategoryId;
+            book.PublisherId = dto.PublisherId;
 
             await _dbContext.SaveChangesAsync();
             return true;

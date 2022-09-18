@@ -1,6 +1,7 @@
 ﻿@page "/borrow"
 
 @inject IBorrowService BorrowService
+@inject IDialogService DialogService
 
 <MudText Class="mb-3" Typo="Typo.h4">Borrows</MudText>
 
@@ -15,6 +16,8 @@
         <MudTh>Borrower</MudTh>
         <MudTh>Create Date</MudTh>
         <MudTh>Return Date</MudTh>
+        <MudTh>Returned Date</MudTh>
+        <MudTh>Actions</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="ID">@context.Id</MudTd>
@@ -22,28 +25,53 @@
         <MudTd DataLabel="ISBN">@context.Book.ISBN</MudTd>
         <MudTd DataLabel="Borrower">@($"{context.Borrower.SName} {context.Borrower.Name}")</MudTd>
         <MudTd DataLabel="CreateDate">@context.CreateDate.ToString("dd.MM.yyyy")</MudTd>
-        <MudTd DataLabel="ReturnDate">@context.ReturnDate.ToString("dd.MM.yyyy")</MudTd>
+        <MudTd DataLabel="ReturnDate">@(context.ReturnDate == null ? "" : context.ReturnDate.Value.ToString("dd.MM.yyyy"))</MudTd>
+        <MudTd DataLabel="ReturnedDate">@(context.ReturnedDate == null ? "" : context.ReturnedDate.Value.ToString("dd.MM.yyyy"))</MudTd>
+        <MudTd><MudIconButton Disabled="@(context.ReturnedDate != null)" Icon="@Icons.Material.Filled.KeyboardReturn" Color="Color.Primary" OnClick="() => OnReturnClick(context.Id)"></MudIconButton></MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />
     </PagerContent>
 </MudTable>
 
-    @code {
+@code {
     private IEnumerable<BorrowDto> borrows;
 
     protected override async Task OnInitializedAsync()
+    {
+        await Load();
+    }
+
+    private async Task Load()
     {
         borrows = await BorrowService.GetAll();
     }
 
     private string RowStyleFunc(BorrowDto book, int index)
     {
-        if(book.ReturnDate < DateTime.Now)
+        if(book.ReturnDate.Value < DateTime.Now)
         {
             return "background-color: #FFCDD2";
         }
 
         return "";
+    }
+
+    private async Task OnReturnClick(int id)
+    {
+        var parameters = new DialogParameters();
+        parameters.Add("ContentText", "Are you sure? This process cannot be undone.");
+        parameters.Add("ButtonText", "Return");
+        parameters.Add("Color", Color.Success);
+
+        var options = new DialogOptions() { CloseButton = true, MaxWidth = MaxWidth.ExtraSmall };
+
+        var result = await DialogService.Show<DialogMessage>("Return", parameters, options).Result;
+
+        if (!result.Cancelled)
+        {
+            await BorrowService.GiveBack(id);
+            await Load();
+        }
     }
 }
