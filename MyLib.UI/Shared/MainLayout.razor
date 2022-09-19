@@ -13,8 +13,7 @@
     <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <MudPaper Elevation="0" Class="py-3">
             <MudNavMenu Color="Color.Info" Bordered="true">
-                <MudNavLink Href="/" Match=NavLinkMatch.All Icon="@Icons.Filled.Home">Home</MudNavLink>
-                <MudNavLink Href="/book" Icon="@Icons.Filled.LibraryBooks">Books</MudNavLink>
+                <MudNavLink Href="/book" Match=NavLinkMatch.All Icon="@Icons.Filled.LibraryBooks">Books</MudNavLink>
                 <AuthorizeView Roles="Borrower">
                     <MudNavLink Href="/borrow/my" Icon="@Icons.Filled.MenuBook">My Borrows</MudNavLink>
                 </AuthorizeView>
